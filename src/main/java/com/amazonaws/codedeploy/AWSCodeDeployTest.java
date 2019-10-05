@@ -15,9 +15,7 @@
 package com.amazonaws.codedeploy;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.Date;
 
@@ -60,39 +58,39 @@ import hudson.util.ListBoxModel;
  * credentials to be configured for each project.
  */
 public class AWSCodeDeployTest {
-	public static final long DEFAULT_TIMEOUT_SECONDS = 900;
-	public static final long DEFAULT_POLLING_FREQUENCY_SECONDS = 15;
-	public static final String ROLE_SESSION_NAME = "jenkins-codedeploy-plugin";
-	private static final Regions[] AVAILABLE_REGIONS = { Regions.AP_NORTHEAST_1, Regions.AP_SOUTHEAST_1,
+	public static long DEFAULT_TIMEOUT_SECONDS = 900;
+	public static long DEFAULT_POLLING_FREQUENCY_SECONDS = 15;
+	public static String ROLE_SESSION_NAME = "jenkins-codedeploy-plugin";
+	private static Regions[] AVAILABLE_REGIONS = { Regions.AP_NORTHEAST_1, Regions.AP_SOUTHEAST_1,
 			Regions.AP_SOUTHEAST_2, Regions.EU_WEST_1, Regions.US_EAST_1, Regions.US_WEST_2, Regions.EU_CENTRAL_1,
 			Regions.US_WEST_1, Regions.SA_EAST_1, Regions.AP_NORTHEAST_2, Regions.AP_SOUTH_1, Regions.US_EAST_2,
 			Regions.CA_CENTRAL_1, Regions.EU_WEST_2, Regions.CN_NORTH_1 };
 
-	private final String s3bucket;
-	private final String s3prefix;
-	private final String githubRepository;
-	private final String githubCommitId;
-	private final String applicationName;
-	private final String deploymentGroupName; // TODO allow for deployment to multiple groups
-	private final String deploymentConfig;
-	private final Long pollingTimeoutSec;
-	private final Long pollingFreqSec;
-	private final boolean deploymentGroupAppspec;
-	private final boolean waitForCompletion;
-	private final String externalId;
-	private final String iamRoleArn;
-	private final String region;
-	private final String includes;
-	private final String excludes;
-	private final String subdirectory;
-	private final String proxyHost;
-	private final int proxyPort;
+	private String s3bucket;
+	private String s3prefix;
+	private  String githubRepository;
+	private  String githubCommitId;
+	private String applicationName;
+	private String deploymentGroupName; // TODO allow for deployment to multiple groups
+	private String deploymentConfig;
+	private Long pollingTimeoutSec;
+	private Long pollingFreqSec;
+	private boolean deploymentGroupAppspec;
+	private boolean waitForCompletion;
+	private String externalId;
+	private String iamRoleArn;
+	private String region = Regions.AP_NORTHEAST_1.getName();
+	private String includes;
+	private String excludes;
+	private String subdirectory;
+	private String proxyHost;
+	private int proxyPort;
 
-	private final String awsAccessKey;
-	private final String awsSecretKey;
-	private final String credentials;
-	private final String deploymentMethod;
-	private final String versionFileName;
+	private String awsAccessKey;
+	private String awsSecretKey;
+	private String credentials;
+	private String deploymentMethod;
+	private String versionFileName;
 
 	private PrintStream logger;
 //	private Map<String, String> envVars;
@@ -104,6 +102,7 @@ public class AWSCodeDeployTest {
 
 	// Fields in config.jelly must match the parameter names in the
 	// "DataBoundConstructor"
+	
 	public AWSCodeDeployTest(String s3bucket, String s3prefix, String githubRepository, String githubCommitId,
 			String applicationName, String deploymentGroupName, String deploymentConfig, String region,
 			Boolean deploymentGroupAppspec, Boolean waitForCompletion, Long pollingTimeoutSec, Long pollingFreqSec,
@@ -158,12 +157,12 @@ public class AWSCodeDeployTest {
 			this.s3prefix = s3prefix;
 		}
 
-		this.githubRepository = githubRepository;
-		this.githubCommitId = githubCommitId;
+//		this.githubRepository = githubRepository;
+//		this.githubCommitId = githubCommitId;
 	}
 
 	public void perform() throws IOException, InterruptedException {
-		final AWSClients aws;
+		AWSClients aws;
 		if ("awsAccessKey".equals(credentials)) {
 			if (StringUtils.isEmpty(this.awsAccessKey) && StringUtils.isEmpty(this.awsSecretKey)) {
 				aws = AWSClients.fromDefaultCredentialChain(this.region, this.proxyHost, this.proxyPort);
@@ -181,7 +180,7 @@ public class AWSCodeDeployTest {
 
 			verifyCodeDeployApplication(aws);
 
-			final String projectName = this.projectName;
+			String projectName = this.projectName;
 
 			RevisionLocation revisionLocation;
 
@@ -270,7 +269,7 @@ public class AWSCodeDeployTest {
 //			reader.close();
 //		} catch (IOException e) {
 //			e.printStackTrace();
-//		} finally {
+//		} ly {
 //			if (reader != null) {
 //				reader.close();
 //			}
@@ -278,7 +277,7 @@ public class AWSCodeDeployTest {
 
 //		if (version != null) {
 //			zipFile = new File("/tmp/" + projectName + "-" + version + ".zip");
-//			final boolean fileCreated = zipFile.createNewFile();
+//			 boolean fileCreated = zipFile.createNewFile();
 //			if (!fileCreated) {
 //				logger.println("File already exists, overwriting: " + zipFile.getPath());
 //			}
@@ -346,7 +345,7 @@ public class AWSCodeDeployTest {
 
 			return revisionLocation;
 		} finally {
-			final boolean deleted = zipFile.delete();
+			boolean deleted = zipFile.delete();
 			if (!deleted) {
 				logger.println("Failed to clean up file " + zipFile.getPath());
 			}
@@ -436,7 +435,7 @@ public class AWSCodeDeployTest {
 				+ deployStatus.getDeploymentOverview());
 
 		if (!deployStatus.getStatus().equals(DeploymentStatus.Succeeded.toString())) {
-			this.logger.println("Deployment did not succeed. Final status: " + deployStatus.getStatus());
+			this.logger.println("Deployment did not succeed.  status: " + deployStatus.getStatus());
 			success = false;
 		}
 
@@ -470,18 +469,18 @@ public class AWSCodeDeployTest {
 	 */
 //	@Extension // This indicates to Jenkins that this is an implementation of an extension
 	// point.
-	public static final class DescriptorImpl {
-
-		private String externalId;
-		private String awsAccessKey;
-		private String awsSecretKey;
-		private String proxyHost;
-		private int proxyPort;
-
-		/**
-		 * In order to load the persisted global configuration, you have to call load()
-		 * in the constructor.
-		 */
+//	public static class DescriptorImpl {
+//
+//		private String externalId;
+//		private String awsAccessKey;
+//		private String awsSecretKey;
+//		private String proxyHost;
+//		private int proxyPort;
+//
+//		/**
+//		 * In order to load the persisted global configuration, you have to call load()
+//		 * in the constructor.
+//		 */
 //		public DescriptorImpl() {
 //			load();
 //
@@ -521,76 +520,76 @@ public class AWSCodeDeployTest {
 //			return super.configure(req, formData);
 //		}
 
-		public String getExternalId() {
-			return externalId;
-		}
-
-		public void setExternalId(String externalId) {
-			this.externalId = externalId;
-		}
-
-		public void setProxyHost(String proxyHost) {
-			this.proxyHost = proxyHost;
-		}
-
-		public String getProxyHost() {
-			return proxyHost;
-		}
-
-		public void setProxyPort(int proxyPort) {
-			this.proxyPort = proxyPort;
-		}
-
-		public int getProxyPort() {
-			return proxyPort;
-		}
-
-		public String getAccountId() {
-			return AWSClients.getAccountId(getProxyHost(), getProxyPort());
-		}
-
-		public void doTestConnection(String s3bucket, String applicationName, String region, String iamRoleArn,
-				String proxyHost, int proxyPort) {
-
-			System.out.println("Testing connection with parameters: " + s3bucket + "," + applicationName + "," + region
-					+ "," + iamRoleArn + "," + this.externalId + "," + proxyHost + "," + proxyPort);
-
-			try {
-				AWSClients awsClients = AWSClients.fromIAMRole(region, iamRoleArn, this.externalId, proxyHost,
-						proxyPort);
-				awsClients.testConnection(s3bucket, applicationName);
-			} catch (Exception e) {
-				System.out.println("Connection test failed with error: " + e.getMessage());
-			}
-
-			System.out.println("Connection test passed.");
-		}
-
-		public ListBoxModel doFillRegionItems() {
-			ListBoxModel items = new ListBoxModel();
-			for (Regions region : AVAILABLE_REGIONS) {
-				items.add(region.toString(), region.getName());
-			}
-			return items;
-		}
-
-		public String getAwsSecretKey() {
-			return awsSecretKey;
-		}
-
-		public void setAwsSecretKey(String awsSecretKey) {
-			this.awsSecretKey = awsSecretKey;
-		}
-
-		public String getAwsAccessKey() {
-			return awsAccessKey;
-		}
-
-		public void setAwsAccessKey(String awsAccessKey) {
-			this.awsAccessKey = awsAccessKey;
-		}
-
-	}
+//		public String getExternalId() {
+//			return externalId;
+//		}
+//
+//		public void setExternalId(String externalId) {
+//			this.externalId = externalId;
+//		}
+//
+//		public void setProxyHost(String proxyHost) {
+//			this.proxyHost = proxyHost;
+//		}
+//
+//		public String getProxyHost() {
+//			return proxyHost;
+//		}
+//
+//		public void setProxyPort(int proxyPort) {
+//			this.proxyPort = proxyPort;
+//		}
+//
+//		public int getProxyPort() {
+//			return proxyPort;
+//		}
+//
+//		public String getAccountId() {
+//			return AWSClients.getAccountId(getProxyHost(), getProxyPort());
+//		}
+//
+//		public void doTestConnection(String s3bucket, String applicationName, String region, String iamRoleArn,
+//				String proxyHost, int proxyPort) {
+//
+//			System.out.println("Testing connection with parameters: " + s3bucket + "," + applicationName + "," + region
+//					+ "," + iamRoleArn + "," + this.externalId + "," + proxyHost + "," + proxyPort);
+//
+//			try {
+//				AWSClients awsClients = AWSClients.fromIAMRole(region, iamRoleArn, this.externalId, proxyHost,
+//						proxyPort);
+//				awsClients.testConnection(s3bucket, applicationName);
+//			} catch (Exception e) {
+//				System.out.println("Connection test failed with error: " + e.getMessage());
+//			}
+//
+//			System.out.println("Connection test passed.");
+//		}
+//
+//		public ListBoxModel doFillRegionItems() {
+//			ListBoxModel items = new ListBoxModel();
+//			for (Regions region : AVAILABLE_REGIONS) {
+//				items.add(region.toString(), region.getName());
+//			}
+//			return items;
+//		}
+//
+//		public String getAwsSecretKey() {
+//			return awsSecretKey;
+//		}
+//
+//		public void setAwsSecretKey(String awsSecretKey) {
+//			this.awsSecretKey = awsSecretKey;
+//		}
+//
+//		public String getAwsAccessKey() {
+//			return awsAccessKey;
+//		}
+//
+//		public void setAwsAccessKey(String awsAccessKey) {
+//			this.awsAccessKey = awsAccessKey;
+//		}
+//
+//	}
 
 	public String getApplicationName() {
 		return applicationName;
